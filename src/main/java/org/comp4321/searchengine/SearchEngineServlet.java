@@ -17,8 +17,9 @@ public class SearchEngineServlet extends HttpServlet {
 
         String query = request.getParameter("Query");
         String similarToPageId = request.getParameter("SimilarTo");
+        boolean isSimilarSearch = similarToPageId != null && !similarToPageId.trim().isEmpty();
 
-        if ((query == null || query.trim().isEmpty()) && (similarToPageId == null || similarToPageId.trim().isEmpty())) {
+        if ((query == null || query.trim().isEmpty()) && !isSimilarSearch) {
             response.sendRedirect("index.jsp");
             return;
         }
@@ -28,7 +29,35 @@ public class SearchEngineServlet extends HttpServlet {
         String StopWordFilePath = getServletContext().getRealPath("/") + "WEB-INF/stopwords.txt";
 
         try (SearchEngine searchEngine = new SearchEngine(PagesFilePath, "Pages", IndexerFilePath, StopWordFilePath)) {
-            if (similarToPageId != null && !similarToPageId.trim().isEmpty()) {
+            out.println("<html><head><title>Search Results</title>");
+            out.println("<style>");
+            out.println("body { font-family: Arial, sans-serif; }");
+            out.println(".container { text-align: left; margin-top: 20px; margin-left: 20px; }");
+            out.println(".search-form { margin-bottom: 20px; }");
+            out.println(".search-input { width: 300px; padding: 8px; }");
+            out.println(".button { margin-left: 5px; }");
+            out.println(".results-heading { text-align: left; }");
+            out.println("</style>");
+            out.println("<script>");
+            out.println("function validateForm() {");
+            out.println("    var x = document.getElementById('searchQuery').value;");
+            out.println("    if (x.trim() == '') { alert('Please enter a search term.'); return false; }");
+            out.println("    return true;");
+            out.println("}");
+            out.println("function setAction(actionPath) {");
+            out.println("    document.getElementById('searchForm').action = actionPath;");
+            out.println("}");
+            out.println("</script>");
+            out.println("</head><body>");
+            out.println("<div class='container'>");
+            out.println("<h2>Search Engine</h2>");
+            out.println("<form id='searchForm' class='search-form' method='get' onsubmit='return validateForm()'>");
+            out.println("<input type='text' id='searchQuery' name='Query' placeholder='Enter your search term' class='search-input'>");
+            out.println("<button type='submit' class='button' onclick='setAction(\"search\");'>Search</button>");
+            out.println("<button type='submit' class='button' onclick='setAction(\"lucky\");'>I'm Feeling Lucky</button>");
+            out.println("</form>");
+
+            if (isSimilarSearch) {
                 PageInfo pageInfo = searchEngine.getPageInfo(Integer.parseInt(similarToPageId));
                 query = pageInfo.getKeywords().entrySet().stream()
                         .sorted(Map.Entry.comparingByValue(Comparator.reverseOrder()))
@@ -41,27 +70,14 @@ public class SearchEngineServlet extends HttpServlet {
                             }
                         })
                         .collect(Collectors.joining(" "));
-            } else if (query != null && !query.trim().isEmpty()) {
+                out.println("<h2 class='results-heading'>Similar Pages for \"" + pageInfo.getTitle() + "\"</h2>");
+            } else {
+                out.println("<h2 class='results-heading'>Top Search Results for \"" + query + "\"</h2>");
             }
 
             Map<Integer, Double> rankedPages = searchEngine.rank(query);
             Vector<Map.Entry<Integer, Double>> vec = new Vector<>(rankedPages.entrySet());
             vec.sort(Map.Entry.comparingByValue(Comparator.reverseOrder()));
-
-            out.println("<html><head><title>Search Results</title>");
-            out.println("<script>function validateForm() { var x = document.forms['searchForm']['Query'].value; if (x == null || x.trim() == '') { return false; } return true; }</script>");
-            out.println("</head><body>");
-            out.println("<div style='text-align:center; margin-top: 20px;'>");
-            out.println("<h2>Search Engine</h2>");
-            out.println("<form name='searchForm' action='search' method='get' style='margin-bottom: 20px;' onsubmit='return validateForm()'>");
-            out.println("<input type='text' name='Query' placeholder='Enter your search term' style='width: 300px; padding: 8px;'>");
-            out.println("<button type='submit' style='display:none;'>Search</button>");
-            out.println("<h3>Or</h3>");
-            out.println("</form>");
-            out.println("<form action='keywordlist' method='get' style='margin-bottom: 20px;'>");
-            out.println("<button type='submit' class='keyword-button'>Browse and Search by Keywords</button>");
-            out.println("</form>");
-            out.println("</div>");
 
             int count = 0;
             boolean foundValidResult = false;
@@ -71,7 +87,7 @@ public class SearchEngineServlet extends HttpServlet {
 
                 PageInfo pageInfo = searchEngine.getPageInfo(entry.getKey());
                 if (pageInfo != null) {
-                    out.println("<div style='margin-bottom:20px; margin-left: 20px;'>");
+                    out.println("<div>");
                     out.println("<strong>Score: " + String.format("%.2f", entry.getValue()) + "</strong> - <a href='" + pageInfo.getUrl() + "'>" + pageInfo.getTitle() + "</a><br>");
                     out.println("<small>URL: " + pageInfo.getUrl() + "</small><br>");
                     out.println("Last Modified: " + pageInfo.getLastModificationDate() + ", Size: " + pageInfo.getPageSize() + " bytes<br>");
@@ -109,10 +125,10 @@ public class SearchEngineServlet extends HttpServlet {
             }
 
             if (!foundValidResult) {
-                out.println("<div style='margin-left: 20px;'><p>Your search - \"" + query + "\" - did not match any documents.</p></div>");
+                out.println("<div class='results-heading'><p>Your search - \"" + query + "\" - did not match any documents.</p></div>");
             }
 
-            out.println("</body></html>");
+            out.println("</div></body></html>");
         } catch (Exception e) {
             out.println("<p>Error processing request: " + e.getMessage() + "</p>");
             e.printStackTrace(out);
