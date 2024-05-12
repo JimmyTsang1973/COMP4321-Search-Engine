@@ -25,7 +25,7 @@ class PostingList implements Serializable{
     }
 }
 
-public class Indexer {
+public class Indexer implements AutoCloseable {
     private RecordManager recman;
     private HTree titleIndex;
     private HTree bodyIndex;
@@ -156,61 +156,13 @@ public class Indexer {
         return (String) idToWordIndex.get(wordId);
     }
 
-    public void printAll() throws IOException {
-        System.out.println("Title Index:");
-        printIndex(titleIndex);
-        System.out.println("Body Index:");
-        printIndex(bodyIndex);
-    }
-
-    private void printIndex(HTree index) throws IOException {
-        FastIterator iter = index.keys();
-        String key;
-        while ((key = (String) iter.next()) != null) {
-            PostingList postings = (PostingList) index.get(key);
-            try {
-                System.out.println("WordId: " + key + ", Word: " + getWord(Integer.parseInt(key)) + ", Postings: " + postings.pageFreqs.toString() + "\n");
-            } catch (NumberFormatException e) {
-                e.printStackTrace();
-            }
+    public Vector<String> getAllIndexedWords() throws IOException {
+        Vector<String> words = new Vector<>();
+        FastIterator iter = idToWordIndex.keys();
+        Integer wordId;
+        while ((wordId = (Integer) iter.next()) != null) {
+            words.add((String) idToWordIndex.get(wordId));
         }
-    }
-
-    public void printPostingForWord(String word) throws IOException {
-        PostingList titlePostings = (PostingList) titleIndex.get(getWordId(word));
-        if (titlePostings != null && !titlePostings.pageFreqs.isEmpty()) {
-            System.out.println("Title Index Postings for '" + word + "': " + titlePostings.pageFreqs);
-        }
-        else {
-            System.out.println("No postings found in Title Index for '" + word + "'.");
-        }
-
-        PostingList bodyPostings = (PostingList) bodyIndex.get(getWordId(word));
-        if (bodyPostings != null && !bodyPostings.pageFreqs.isEmpty()) {
-            System.out.println("Body Index Postings for '" + word + "': " + bodyPostings.pageFreqs);
-        }
-        else {
-            System.out.println("No postings found in Body Index for '" + word + "'.");
-        }
-    }
-
-    public String getPostingForWord(String word) throws IOException {
-        StringBuilder stringBuilder = new StringBuilder();
-        PostingList titlePostings = (PostingList) titleIndex.get(getWordId(word));
-        if (titlePostings != null && !titlePostings.pageFreqs.isEmpty()) {
-            stringBuilder.append("Title Index Postings for '").append(word).append("': ").append(titlePostings.pageFreqs);
-        }
-        else {
-            stringBuilder.append("No postings found in Title Index for '").append(word).append("'.\n");
-        }
-
-        PostingList bodyPostings = (PostingList) bodyIndex.get(getWordId(word));
-        if (bodyPostings != null && !bodyPostings.pageFreqs.isEmpty()) {
-            stringBuilder.append("Body Index Postings for '").append(word).append("': ").append(bodyPostings.pageFreqs);
-        }
-        else {
-            stringBuilder.append("No postings found in Body Index for '").append(word).append("'.\n");
-        }
-        return stringBuilder.toString();
+        return words;
     }
 }

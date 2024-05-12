@@ -14,7 +14,6 @@ import java.util.regex.Pattern;
 public class SearchEngine implements AutoCloseable{
     private RecordManager recman;
     private HTree pages;
-    private HTree wordIds;
     private StopStem stopStem;
     private Indexer indexer;
 
@@ -39,7 +38,7 @@ public class SearchEngine implements AutoCloseable{
 
     public Indexer getIndexer() { return indexer; }
 
-    private Vector<String> split(String string) throws IOException {
+    private Vector<String> split(String string) {
         String[] tokens = string.split("\\W+");
         Vector<String> returnString = new Vector<>();
         for (String token : tokens) {

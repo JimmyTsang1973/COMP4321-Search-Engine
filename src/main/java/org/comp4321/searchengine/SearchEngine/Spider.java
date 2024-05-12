@@ -42,8 +42,6 @@ public class Spider implements AutoCloseable {
         return (PageInfo) pages.get(pageId);
     }
 
-    public Indexer getIndexer() { return indexer; }
-    @Override
     public void close() throws IOException {
         recman.commit();
         recman.close();
@@ -88,28 +86,6 @@ public class Spider implements AutoCloseable {
             value = (String) iter.next();
         }
         return false;
-    }
-
-    public void printAll() throws IOException {
-        FastIterator iter = pages.values();
-        PageInfo value;
-        while ((value = (PageInfo)iter.next()) != null) {
-            System.out.println(value.getPageId() + ". " + value.toString(indexer));
-        }
-    }
-
-    public void makeTXT() {
-        try {
-            FileWriter fileWriter = new FileWriter("spider_result.txt");
-            FastIterator iter = pages.values();
-            PageInfo value;
-            while ((value = (PageInfo)iter.next()) != null) {
-                fileWriter.write(value.getPageId() + ". " + value.toString(indexer));
-            }
-            fileWriter.close();
-        } catch (IOException e) {
-            throw new RuntimeException(e);
-        }
     }
 
     public void BFS_OnRootLink(String rootLink) throws ParserException, IOException, ParseException {

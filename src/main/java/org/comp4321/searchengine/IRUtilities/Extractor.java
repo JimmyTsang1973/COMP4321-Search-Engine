@@ -30,9 +30,8 @@ public class Extractor {
     /**
      * extract all the links from the root_link
      * @return  all links from root_link in a URL array, empty array if root_link is null
-     * @throws ParserException
      */
-    public Vector<String> extractLinks() throws ParserException {
+    public Vector<String> extractLinks() {
         if (rootLink != null) {
             LinkBean linkBean = new LinkBean();
             linkBean.setURL(rootLink);

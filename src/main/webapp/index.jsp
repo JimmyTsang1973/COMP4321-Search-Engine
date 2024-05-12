@@ -1,4 +1,3 @@
-<%@ page language="java" contentType="text/html; charset=UTF-8" pageEncoding="UTF-8"%>
 <!DOCTYPE html>
 <html>
 <head>
@@ -12,11 +11,14 @@
             text-align: center;
         }
         .search-box {
-            width: 80%;
-            padding: 12px 20px;
+            width: 300px;
+            padding: 8px;
+            margin-top: 10px;
             font-size: 16px;
+            display: block;
+            margin-bottom: 20px;
         }
-        h2 {
+        h2, h3 {
             margin-bottom: 20px;
         }
     </style>
@@ -24,7 +26,6 @@
         function validateForm() {
             var x = document.forms["searchForm"]["Query"].value;
             if (x.trim() == "") {
-                alert("Please enter a search term.");
                 return false;
             }
             return true;
@@ -37,6 +38,10 @@
     <form name="searchForm" action="search" method="get" onsubmit="return validateForm()">
         <input type="text" name="Query" placeholder="Enter your search term" class="search-box">
         <button type="submit" style="display:none;">Search</button>
+    </form>
+    <h3>Or</h3>
+    <form action="keywordlist" method="get">
+        <button type="submit" class="keyword-button">Browse and Search by Keywords</button>
     </form>
 </div>
 </body>
