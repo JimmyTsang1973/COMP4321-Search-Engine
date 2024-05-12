@@ -23,9 +23,6 @@ public class SearchEngineServlet extends HttpServlet {
             return;
         }
 
-        String headerTitle = "Top Search Results";
-        String headerLink = "";
-
         String PagesFilePath = getServletContext().getRealPath("/") + "WEB-INF/Pages";
         String IndexerFilePath = getServletContext().getRealPath("/") + "WEB-INF/Indexer";
         String StopWordFilePath = getServletContext().getRealPath("/") + "WEB-INF/stopwords.txt";
@@ -44,10 +41,7 @@ public class SearchEngineServlet extends HttpServlet {
                             }
                         })
                         .collect(Collectors.joining(" "));
-                headerTitle = "Getting similar pages for <a href='" + pageInfo.getUrl() + "'>" + pageInfo.getTitle() + "</a>";
-                headerLink = pageInfo.getUrl();
             } else if (query != null && !query.trim().isEmpty()) {
-                headerTitle = "Top Search Results for '" + query + "'";
             }
 
             Map<Integer, Double> rankedPages = searchEngine.rank(query);
